@@ -57,3 +57,58 @@ def update_employee(id:int,updatedEmp:Employee):
             return emp
     return {"message:employee not found"}
 
+@app.get("/TotalEmployees")
+def count_employees():
+    return {"Total employees": len(employees)}
+
+@app.get("/findByDesignation/{des}")
+def getby_Designation(des:str):
+    result=[]
+    for emp in employees:
+        if emp.designation.lower() == des.lower():
+            result.append(emp)
+    return result
+
+@app.get("/greaterThanSalary/{sal}")
+def get_salary_greaterThan(sal:float):
+    result=[]
+    for emp in employees:
+        if emp.salary>sal:
+            result.append(emp)
+    return result
+
+@app.get("/findByage/{age}")
+def findBy_age(age:int):
+    result=[]
+    for emp in employees:
+        if emp.age == age:
+          result.append(emp)
+    return result
+
+@app.get("/totalSalary")
+def total_slaries():
+    total=0
+    for emp in employees:
+        total+=emp.salary
+    return {"Total salary is":total}
+
+@app.put("/updateSalary/{id}/{salary}")
+def update_salary(id:int,salary:float):
+    for emp in employees:
+        if emp.id==id:
+            emp.salary=salary
+            return emp
+    return {"message: cannot find"}
+
+@app.get("/findByname/{name}")
+def findBy_age(name:str):
+    result=[]
+    for emp in employees:
+        if emp.name==name:
+         result.append(emp)
+    return result
+
+        
+
+
+
