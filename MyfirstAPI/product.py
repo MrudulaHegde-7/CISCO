@@ -24,6 +24,13 @@ def products_byId(id:int):
             return prod
     return {"message:not found"}
 
+@app.get("/productByName/{name}")
+def getProductByName(name: str):
+    for prod in products:
+        if prod.name == name:
+            return prod
+    return {"message": "Product Not Found"}
+
 @app.put("/updateProduct/{id}")
 def update_employee(id:int,updatedProd:Product):
     for prod in products:
@@ -34,6 +41,14 @@ def update_employee(id:int,updatedProd:Product):
             prod.category=updatedProd.category
             return prod
     return {"message:employee not found"}
+
+@app.patch("/updatePrice/{id}")
+def updatePrice(id: int, price: float):
+    for prod in products:
+        if prod.id == id:
+            prod.price = price
+            return {"message": "Price Updated Successfully"}
+    return {"message": "Product Not Found"}
 
 @app.delete("/deleteProduct/{id}")
 def del_product_byId(id:int):
@@ -62,3 +77,8 @@ def get_prduct_lessThan(price:float):
 @app.get("/productCount")
 def count_products():
     return {"Total products": len(products)}
+
+@app.delete("/deleteAllProducts")
+def deleteAllProducts():
+    products.clear()
+    return {"message": "All Products Deleted Successfully"}
