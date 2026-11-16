@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>People — Employee Management</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17243b;
+      --muted: #78859a;
+      --line: #e8edf4;
+      --paper: #fff;
+      --canvas: #f5f7fb;
+      --blue: #345ee9;
+      --blue-dark: #244bd0;
+      --blue-pale: #edf1ff;
+      --green: #16835d;
+      --red: #c23e4e;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 5vw, 72px);
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 750; letter-spacing: -.3px; }
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 11px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .top-label { color: var(--muted); font-size: 13px; }
+
+    main { width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 42px 0 64px; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+    .eyebrow { margin: 0 0 8px; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(26px, 4vw, 34px); letter-spacing: -1.2px; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .stat {
+      min-width: 154px;
+      padding: 14px 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 3px 12px #182e5c08;
+    }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { display: block; margin-top: 3px; font-size: 24px; font-weight: 750; letter-spacing: -.8px; }
+
+    .notice { margin: 0 0 18px; padding: 12px 15px; border: 1px solid #f3c7cd; border-radius: 10px; color: #9c2c3b; background: #fff3f4; font-size: 13px; }
+    .notice[hidden] { display: none; }
+    .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); align-items: start; gap: 20px; }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 5px 20px #182e5c08; }
+    .form-card { padding: 23px; }
+    .section-title { margin: 0; font-size: 16px; font-weight: 750; letter-spacing: -.25px; }
+    .section-caption { margin: 6px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .field { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 7px; color: #46536a; font-size: 12px; font-weight: 650; }
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #dfe5ee;
+      border-radius: 9px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input::placeholder { color: #a4adbb; }
+    input:focus, select:focus { border-color: #7892f2; box-shadow: 0 0 0 3px #345ee91a; }
+    input:disabled { color: #8a94a5; background: #f5f7fa; }
+    .form-actions { display: flex; gap: 9px; margin-top: 19px; }
+    .button {
+      display: inline-flex;
+      min-height: 39px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 13px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .button-primary { flex: 1; color: #fff; background: var(--blue); }
+    .button-primary:hover { background: var(--blue-dark); }
+    .button-secondary { color: #536078; background: #fff; border-color: #dfe5ee; }
+    .button-secondary:hover { background: #f7f8fb; }
+    .button-danger { color: var(--red); background: #fff; border-color: #f1d7da; }
+    .button-danger:hover { background: #fff4f5; }
+    .button:disabled { cursor: wait; opacity: .6; }
+
+    .directory { min-width: 0; overflow: hidden; }
+    .directory-head { padding: 22px 22px 16px; }
+    .directory-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .directory-meta { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .toolbar { display: grid; grid-template-columns: minmax(150px, 1fr) 170px auto; gap: 9px; margin-top: 18px; }
+    .toolbar input, .toolbar select { min-height: 39px; font-size: 12px; }
+    .delete-all { white-space: nowrap; }
+    .table-wrap { width: 100%; overflow-x: auto; border-top: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 12px 15px; color: #8792a4; background: #fbfcfe; font-size: 10px; font-weight: 750; letter-spacing: .65px; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 14px 15px; border-top: 1px solid #eef1f5; font-size: 12px; white-space: nowrap; }
+    tbody tr:hover { background: #fcfdff; }
+    .person { display: flex; align-items: center; gap: 10px; }
+    .avatar { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; color: #405ed2; background: var(--blue-pale); border-radius: 50%; font-size: 11px; font-weight: 800; }
+    .person-name { font-weight: 700; }
+    .person-id { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .designation { display: inline-flex; padding: 5px 8px; color: #5367a7; background: #f0f3ff; border-radius: 20px; font-size: 10px; font-weight: 650; }
+    .salary { font-weight: 700; }
+    .row-actions { display: flex; justify-content: flex-end; gap: 6px; }
+    .icon-button { min-height: 30px; padding: 0 8px; color: #59667b; background: #fff; border: 1px solid #e4e8ef; border-radius: 7px; font-size: 10px; font-weight: 650; }
+    .icon-button:hover { color: var(--blue); border-color: #b8c5f6; background: #f9faff; }
+    .icon-button.remove:hover { color: var(--red); border-color: #efc7cc; background: #fff8f8; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    .empty { padding: 52px 20px; text-align: center; }
+    .empty-symbol { display: grid; width: 46px; height: 46px; margin: 0 auto 13px; place-items: center; color: var(--blue); background: var(--blue-pale); border-radius: 14px; font-size: 20px; font-weight: 700; }
+    .empty strong { display: block; font-size: 14px; }
+    .empty p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .loading { padding: 36px 20px; color: var(--muted); text-align: center; font-size: 12px; }
+
+    dialog { width: min(400px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 22px 80px #17243b33; }
+    dialog::backdrop { background: #16233c66; }
+    .dialog-title { margin: 0; font-size: 18px; letter-spacing: -.4px; }
+    .dialog-copy { margin: 7px 0 19px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    footer { padding-top: 22px; color: #99a3b2; text-align: center; font-size: 11px; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 290px minmax(0, 1fr); gap: 14px; }
+      .toolbar { grid-template-columns: 1fr 145px; }
+      .delete-all { grid-column: 1 / -1; justify-self: end; }
+      .directory-head { padding: 19px 17px 14px; }
+      th, td { padding-right: 12px; padding-left: 12px; }
+    }
+    @media (max-width: 680px) {
+      .topbar { height: 62px; padding: 0 20px; }
+      main { width: min(100% - 28px, 560px); padding-top: 28px; }
+      .page-heading { align-items: flex-start; }
+      .stat { min-width: 106px; padding: 11px 12px; }
+      .stat-value { font-size: 21px; }
+      .layout { grid-template-columns: 1fr; }
+      .form-card { order: 0; }
+      .directory { order: 1; }
+      .directory-title-row { align-items: flex-start; }
+      .toolbar { grid-template-columns: 1fr; }
+      .delete-all { grid-column: auto; justify-self: stretch; }
+      .delete-all .button { width: 100%; }
+    }
+    @media (max-width: 420px) {
+      .top-label { display: none; }
+      .page-heading { gap: 12px; }
+      .stat { min-width: 90px; }
+      .subtitle { max-width: 230px; line-height: 1.5; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">P</span><span>People</span></div>
+    <span class="top-label">Employee management</span>
+  </header>
+
+  <main>
+    <section class="page-heading" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Workspace / People</p>
+        <h1 id="page-title">Employee directory</h1>
+        <p class="subtitle">Manage your team, employee details, and compensation.</p>
+      </div>
+      <div class="stat" aria-live="polite">
+        <span class="stat-label">Total employees</span>
+        <strong class="stat-value" id="employee-count">—</strong>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" role="alert" hidden></div>
+
+    <section class="layout">
+      <aside class="card form-card" aria-labelledby="form-title">
+        <h2 class="section-title" id="form-title">Add an employee</h2>
+        <p class="section-caption" id="form-caption">Enter the employee details to add them to your directory.</p>
+        <form id="employee-form">
+          <div class="field">
+            <label for="employee-id">Employee ID</label>
+            <input id="employee-id" name="id" type="number" min="1" step="1" placeholder="e.g. 1042" required>
+          </div>
+          <div class="field">
+            <label for="employee-name">Full name</label>
+            <input id="employee-name" name="name" type="text" minlength="3" maxlength="30" placeholder="e.g. Jordan Lee" required>
+          </div>
+          <div class="field">
+            <label for="employee-age">Age</label>
+            <input id="employee-age" name="age" type="number" min="18" max="60" step="1" placeholder="18–60" required>
+          </div>
+          <div class="field">
+            <label for="employee-salary">Annual salary</label>
+            <input id="employee-salary" name="salary" type="number" min="25000" step="0.01" placeholder="Minimum 25,000" required>
+          </div>
+          <div class="field">
+            <label for="employee-designation">Designation</label>
+            <input id="employee-designation" name="desig" type="text" minlength="3" maxlength="30" placeholder="e.g. Product Designer" required>
+          </div>
+          <div class="form-actions">
+            <button class="button button-primary" id="save-employee" type="submit">Add employee</button>
+            <button class="button button-secondary" id="cancel-edit" type="button" hidden>Cancel</button>
+          </div>
+        </form>
+      </aside>
+
+      <section class="card directory" aria-labelledby="directory-title">
+        <div class="directory-head">
+          <div class="directory-title-row">
+            <div>
+              <h2 class="section-title" id="directory-title">All employees</h2>
+              <p class="directory-meta" id="directory-meta">Loading your directory…</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <input id="search" type="search" aria-label="Search employees" placeholder="Search name, ID, or designation">
+            <select id="designation-filter" aria-label="Filter by designation">
+              <option value="">All designations</option>
+            </select>
+            <div class="delete-all">
+              <button class="button button-danger" id="delete-all" type="button">Delete all</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Employee</th>
+                <th scope="col">Designation</th>
+                <th scope="col">Age</th>
+                <th scope="col">Annual salary</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="employee-rows"></tbody>
+          </table>
+          <div id="empty-state" class="empty" hidden>
+            <span class="empty-symbol" aria-hidden="true">+</span>
+            <strong id="empty-title">No employees yet</strong>
+            <p id="empty-copy">Add your first employee using the form.</p>
+          </div>
+          <div id="loading-state" class="loading">Loading employees…</div>
+        </div>
+      </section>
+    </section>
+    <footer>Employee data is stored by the Employee Management API.</footer>
+  </main>
+
+  <dialog id="salary-dialog" aria-labelledby="salary-title">
+    <form id="salary-form">
+      <h2 class="dialog-title" id="salary-title">Update salary</h2>
+      <p class="dialog-copy" id="salary-copy">Enter a new annual salary. The minimum salary is 25,000.</p>
+      <div class="field">
+        <label for="new-salary">Annual salary</label>
+        <input id="new-salary" type="number" min="25000" step="0.01" required>
+      </div>
+      <div class="dialog-actions">
+        <button class="button button-secondary" id="cancel-salary" type="button">Cancel</button>
+        <button class="button button-primary" id="save-salary" type="submit">Save salary</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const form = document.querySelector("#employee-form");
+    const rows = document.querySelector("#employee-rows");
+    const search = document.querySelector("#search");
+    const designationFilter = document.querySelector("#designation-filter");
+    const notice = document.querySelector("#notice");
+    const emptyState = document.querySelector("#empty-state");
+    const loadingState = document.querySelector("#loading-state");
+    const salaryDialog = document.querySelector("#salary-dialog");
+    let employees = [];
+    let editingId = null;
+    let salaryEmployeeId = null;
+    let busy = false;
+
+    function showError(message) {
+      notice.textContent = message;
+      notice.hidden = false;
+    }
+
+    function clearError() {
+      notice.textContent = "";
+      notice.hidden = true;
+    }
+
+    async function request(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { "Content-Type": "application/json", ...options.headers }
+      });
+      const text = await response.text();
+      let data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error("The server returned an unreadable response.");
+        }
+      }
+      if (!response.ok) {
+        const detail = data?.error || data?.detail;
+        const validation = data?.details?.map(item => {
+          const field = item.loc?.slice(1).join(".");
+          return field ? `${field}: ${item.msg}` : item.msg;
+        }).join("; ");
+        throw new Error(validation || detail || `Request failed (${response.status}).`);
+      }
+      return data;
+    }
+
+    async function loadEmployees() {
+      loadingState.hidden = false;
+      try {
+        const data = await request("/getAllEmployees");
+        employees = Array.isArray(data) ? data : [];
+        clearError();
+      } catch (error) {
+        if (error.message === "No Employees Available") {
+          employees = [];
+          clearError();
+        } else {
+          showError(error.message);
+        }
+      } finally {
+        loadingState.hidden = true;
+        render();
+      }
+    }
+
+    function initials(name) {
+      return name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase();
+    }
+
+    function formatSalary(salary) {
+      return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(salary);
+    }
+
+    function makeAction(label, action, id, extraClass = "") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `icon-button ${extraClass}`.trim();
+      button.textContent = label;
+      button.dataset.action = action;
+      button.dataset.id = id;
+      return button;
+    }
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const selectedDesignation = designationFilter.value;
+      const filtered = employees.filter(employee => {
+        const matchesQuery = !query || [employee.name, employee.id, employee.desig]
+          .some(value => String(value).toLowerCase().includes(query));
+        return matchesQuery && (!selectedDesignation || employee.desig === selectedDesignation);
+      });
+
+      document.querySelector("#employee-count").textContent = employees.length;
+      document.querySelector("#directory-meta").textContent =
+        `${filtered.length} ${filtered.length === 1 ? "employee" : "employees"} shown`;
+
+      const designations = [...new Set(employees.map(employee => employee.desig))].sort((a, b) => a.localeCompare(b));
+      const previousFilter = designationFilter.value;
+      designationFilter.replaceChildren(new Option("All designations", ""));
+      designations.forEach(value => designationFilter.add(new Option(value, value)));
+      designationFilter.value = designations.includes(previousFilter) ? previousFilter : "";
+
+      rows.replaceChildren();
+      filtered.forEach(employee => {
+        const row = document.createElement("tr");
+        const personCell = document.createElement("td");
+        const person = document.createElement("div");
+        person.className = "person";
+        const avatar = document.createElement("span");
+        avatar.className = "avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = initials(employee.name);
+        const identity = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "person-name";
+        name.textContent = employee.name;
+        const id = document.createElement("div");
+        id.className = "person-id";
+        id.textContent = `ID ${employee.id}`;
+        identity.append(name, id);
+        person.append(avatar, identity);
+        personCell.append(person);
+
+        const designationCell = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "designation";
+        badge.textContent = employee.desig;
+        designationCell.append(badge);
+
+        const ageCell = document.createElement("td");
+        ageCell.textContent = employee.age;
+        const salaryCell = document.createElement("td");
+        salaryCell.className = "salary";
+        salaryCell.textContent = formatSalary(employee.salary);
+        const actionsCell = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        actions.append(
+          makeAction("Salary", "salary", employee.id),
+          makeAction("Edit", "edit", employee.id),
+          makeAction("Delete", "delete", employee.id, "remove")
+        );
+        actionsCell.append(actions);
+        row.append(personCell, designationCell, ageCell, salaryCell, actionsCell);
+        rows.append(row);
+      });
+
+      const isEmpty = filtered.length === 0;
+      emptyState.hidden = !isEmpty;
+      if (isEmpty) {
+        const hasEmployees = employees.length > 0;
+        document.querySelector("#empty-title").textContent = hasEmployees ? "No matching employees" : "No employees yet";
+        document.querySelector("#empty-copy").textContent = hasEmployees
+          ? "Try another search or designation."
+          : "Add your first employee using the form.";
+      }
+      document.querySelector("#delete-all").disabled = employees.length === 0 || busy;
+    }
+
+    function resetForm() {
+      editingId = null;
+      form.reset();
+      document.querySelector("#employee-id").disabled = false;
+      document.querySelector("#form-title").textContent = "Add an employee";
+      document.querySelector("#form-caption").textContent = "Enter the employee details to add them to your directory.";
+      document.querySelector("#save-employee").textContent = "Add employee";
+      document.querySelector("#cancel-edit").hidden = true;
+    }
+
+    function startEditing(employee) {
+      editingId = employee.id;
+      form.elements.id.value = employee.id;
+      form.elements.name.value = employee.name;
+      form.elements.age.value = employee.age;
+      form.elements.salary.value = employee.salary;
+      form.elements.desig.value = employee.desig;
+      form.elements.id.disabled = true;
+      document.querySelector("#form-title").textContent = "Edit employee";
+      document.querySelector("#form-caption").textContent = `Update the details for ${employee.name}. Employee ID cannot be changed.`;
+      document.querySelector("#save-employee").textContent = "Save changes";
+      document.querySelector("#cancel-edit").hidden = false;
+      form.elements.name.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (busy) return;
+      clearError();
+      const values = new FormData(form);
+      const employee = {
+        id: editingId ?? Number(values.get("id")),
+        name: String(values.get("name")).trim(),
+        age: Number(values.get("age")),
+        salary: Number(values.get("salary")),
+        desig: String(values.get("desig")).trim()
+      };
+      busy = true;
+      const saveButton = document.querySelector("#save-employee");
+      saveButton.disabled = true;
+      try {
+        const url = editingId === null ? "/addEmployee" : `/updateEmployee/${editingId}`;
+        const method = editingId === null ? "POST" : "PUT";
+        await request(url, { method, body: JSON.stringify(employee) });
+        resetForm();
+        await loadEmployees();
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        busy = false;
+        saveButton.disabled = false;
+        render();
+      }
+    });
+
+    document.querySelector("#cancel-edit").addEventListener("click", resetForm);
+    search.addEventListener("input", render);
+    designationFilter.addEventListener("change", render);
+
+    rows.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button || busy) return;
+      const employee = employees.find(item => item.id === Number(button.dataset.id));
+      if (!employee) return;
+
+      if (button.dataset.action === "edit") {
+        startEditing(employee);
+        return;
+      }
+      if (button.dataset.action === "salary") {
+        salaryEmployeeId = employee.id;
+        document.querySelector("#salary-copy").textContent =
+          `Enter a new annual salary for ${employee.name}. The minimum salary is 25,000.`;
+        document.querySelector("#new-salary").value = employee.salary;
+        salaryDialog.showModal();
+        return;
+      }
+      if (button.dataset.action === "delete" &&
+          window.confirm(`Delete ${employee.name} (ID ${employee.id})? This cannot be undone.`)) {
+        clearError();
+        busy = true;
+        render();
+        try {
+          await request(`/deleteEmployee/${employee.id}`, { method: "DELETE" });
+          if (editingId === employee.id) resetForm();
+          await loadEmployees();
+        } catch (error) {
+          showError(error.message);
+        } finally {
+          busy = false;
+          render();
+        }
+      }
+    });
+
+    document.querySelector("#salary-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (busy || salaryEmployeeId === null) return;
+      clearError();
+      const salary = Number(document.querySelector("#new-salary").value);
+      busy = true;
+      document.querySelector("#save-salary").disabled = true;
+      try {
+        await request(`/updateSalary/${salaryEmployeeId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ salary })
+        });
+        salaryDialog.close();
+        await loadEmployees();
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        busy = false;
+        document.querySelector("#save-salary").disabled = false;
+        render();
+      }
+    });
+
+    document.querySelector("#cancel-salary").addEventListener("click", () => salaryDialog.close());
+    salaryDialog.addEventListener("close", () => { salaryEmployeeId = null; });
+    document.querySelector("#delete-all").addEventListener("click", async () => {
+      if (busy || employees.length === 0 ||
+          !window.confirm(`Delete all ${employees.length} employees? This cannot be undone.`)) return;
+      clearError();
+      busy = true;
+      render();
+      try {
+        await request("/deleteAllEmployees", { method: "DELETE" });
+        if (editingId !== null) resetForm();
+        await loadEmployees();
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        busy = false;
+        render();
+      }
+    });
+
+    loadEmployees();
+  </script>
+</body>
+</html>
