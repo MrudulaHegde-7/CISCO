@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Tuple
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
@@ -11,6 +12,7 @@ import mysql.connector
 from pydantic import BaseModel, Field
 
 
+load_dotenv(Path(__file__).with_name(".env"))
 app = FastAPI(title="Employee Management System")
 
 
@@ -35,7 +37,7 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.getenv("MYSQL_HOST", "127.0.0.1"),
         port=int(os.getenv("MYSQL_PORT", "3306")),
-        user=os.getenv("MYSQL_USER", "root"),
+        user=os.getenv("MYSQL_USER", "employee_app"),
         password=os.getenv("MYSQL_PASSWORD", ""),
         database=os.getenv("MYSQL_DATABASE", "employee_management"),
     )
