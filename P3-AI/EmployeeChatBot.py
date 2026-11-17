@@ -1,4 +1,5 @@
 
+import logging
 import os
 from contextlib import contextmanager
 from pathlib import Path
@@ -13,6 +14,8 @@ from google.genai import errors, types
 import mysql.connector
 from pydantic import BaseModel, Field
 
+
+logger = logging.getLogger(__name__)
 
 load_dotenv(Path(__file__).with_name(".env"))
 app = FastAPI(title="Employee Management System")
@@ -239,9 +242,18 @@ def chat(data: ChatRequest):
         except mysql.connector.Error as error:
                 raise EmployeeException(503, "Employee data is unavailable. Please try again later.") from error
         except errors.APIError as error:
+            logger.warning(
+                "Gemini API request failed (HTTP %s): %s",
+                error.code,
+                error.message,
+            )
             if error.code == 404:
                 raise EmployeeException(
                     503, "The configured Gemini model is unavailable. Set GEMINI_MODEL to an available model and restart the app."
+                ) from error
+            if error.code in (400, 401, 403):
+                raise EmployeeException(
+                    503, "Gemini rejected the request. Verify GEMINI_API_KEY and GEMINI_MODEL."
                 ) from error
             if error.code == 504:
                 raise EmployeeException(

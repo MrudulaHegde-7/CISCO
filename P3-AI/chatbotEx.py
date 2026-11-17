@@ -9,7 +9,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from google import genai
-from google.genai import types
 
 
 load_dotenv(Path(__file__).with_name(".env"))
@@ -18,13 +17,7 @@ load_dotenv(Path(__file__).with_name(".env"))
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 	api_key = os.getenv("GEMINI_API_KEY")
-	client = genai.Client(
-		api_key=api_key,
-		http_options=types.HttpOptions(
-			timeout=60000,
-			retry_options=types.HttpRetryOptions(attempts=1),
-		),
-	) if api_key else None
+	client = genai.Client(api_key=api_key) if api_key else None
 	app.state.gemini_client = client
 	try:
 		yield
@@ -70,34 +63,17 @@ async def chat(data: ChatRequest):
 	try:
 		reply = await asyncio.wait_for(
 			client.aio.interactions.create(
-				model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
+				model="gemini-3.6-flash",
 				input="\n\n".join(conversation),
 				generation_config={"thinking_level": "low"},
 				store=False,
 			),
-			timeout=65,
+			timeout=45,
 		)
 	except TimeoutError as error:
 		raise HTTPException(status_code=504, detail="Gemini request timed out. Please try again.") from error
-	except genai.errors.APIError as error:
-		if error.code in (429, 503):
-			raise HTTPException(
-				status_code=error.code,
-				detail="Gemini is busy or its quota has been reached. Please try again later.",
-			) from error
-		if error.code == 504:
-			raise HTTPException(status_code=504, detail="Gemini request timed out. Please try again.") from error
-		raise HTTPException(status_code=502, detail="Gemini could not answer this request. Check the configured model and API access.") from error
 	except Exception as error:
-		status = getattr(error, "status_code", None)
-		if status in (429, 503):
-			raise HTTPException(
-				status_code=status,
-				detail="Gemini is busy or its quota has been reached. Please try again later.",
-			) from error
-		if status == 504:
-			raise HTTPException(status_code=504, detail="Gemini request timed out. Please try again.") from error
-		raise HTTPException(status_code=502, detail="Could not reach Gemini. Please try again.") from error
+		raise HTTPException(status_code=502, detail=f"Gemini request failed: {error}") from error
 
 	if not reply.output_text:
 		raise HTTPException(status_code=502, detail="Gemini returned no answer.")

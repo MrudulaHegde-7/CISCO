@@ -1,5 +1,8 @@
 fastapi
 uvicorn
 mysql-connector-python
-google-genai
 python-dotenv
+google-genai
+python-multipart
+pypdf
+python-docx
