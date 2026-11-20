@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Worklist | To-do list</title>
+  <style>
+    :root { color-scheme: light; --ink: #172b2a; --muted: #62706c; --line: #dce5df; --green: #245c4e; --paper: #fff; --background: #f3f6f2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--ink); font-family: "Segoe UI", sans-serif; font-size: 15px; }
+    .topbar { background: #193c35; color: white; }
+    .topbar-inner { max-width: 1120px; margin: auto; padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 28px; height: 28px; display: grid; place-items: center; background: #d1e8ab; color: #193c35; font-weight: 800; border-radius: 4px; }
+    .brand { font-weight: 700; font-size: 17px; }
+    main { max-width: 1120px; margin: auto; padding: 48px 24px 80px; }
+    .eyebrow { color: var(--green); font-size: 12px; font-weight: 700; text-transform: uppercase; margin: 0 0 10px; }
+    h1 { margin: 0; font-family: Georgia, serif; font-size: 36px; font-weight: 500; }
+    .intro { color: var(--muted); margin: 10px 0 36px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 20px; }
+    h2 { font-size: 17px; margin: 0; }
+    .section-label { color: var(--muted); font-size: 13px; }
+    .task-form { display: grid; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(120px, 1fr)) auto; gap: 12px; align-items: end; margin-bottom: 48px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    input, select, button { font: inherit; }
+    input, select { width: 100%; height: 42px; padding: 0 11px; background: var(--paper); color: var(--ink); border: 1px solid #c9d6ce; border-radius: 4px; }
+    input:focus, select:focus, button:focus-visible { outline: 2px solid #5b9981; outline-offset: 2px; }
+    button { cursor: pointer; }
+    .add-button { height: 42px; padding: 0 20px; white-space: nowrap; border: 1px solid var(--green); border-radius: 4px; background: var(--green); color: white; font-weight: 600; }
+    .add-button:hover { background: #193f35; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 620px; }
+    th { color: var(--muted); font-size: 12px; font-weight: 600; padding: 12px 14px; background: #e8eee9; }
+    td { padding: 16px 14px; border-bottom: 1px solid var(--line); background: white; }
+    td:first-child { font-weight: 600; overflow-wrap: anywhere; }
+    .priority { font-size: 13px; font-weight: 600; }
+    .priority-high { color: #ad4535; }
+    .priority-medium { color: #916213; }
+    .priority-low { color: #386e5b; }
+    .delete-button { border: 0; padding: 4px 0; color: #a13e31; background: transparent; font-weight: 600; }
+    .delete-button:hover { text-decoration: underline; }
+    .empty { padding: 38px 14px; text-align: center; color: var(--muted); background: white; border-bottom: 1px solid var(--line); }
+    @media (max-width: 850px) { .task-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .task-field { grid-column: 1 / -1; } .add-button { width: 100%; } }
+    @media (max-width: 480px) { main { padding: 34px 16px 60px; } .topbar-inner { padding: 16px; } h1 { font-size: 30px; } .task-form { grid-template-columns: 1fr; } .task-field { grid-column: auto; } }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner"><span class="brand-mark" aria-hidden="true">W</span><span class="brand">Worklist</span></div></header>
+  <main>
+    <p class="eyebrow">Your workspace</p>
+    <h1>Task list</h1>
+    <p class="intro">Keep your priorities and deadlines in one place.</p>
+
+    <section aria-labelledby="add-heading">
+      <div class="section-heading"><h2 id="add-heading">Add a task</h2></div>
+      <form class="task-form" action="{{ url_for('add_task') }}" method="post">
+        <div class="task-field"><label for="task">Task name</label><input id="task" name="task" type="text" placeholder="What needs to be done?" required></div>
+        <div><label for="priority">Priority</label><select id="priority" name="priority" required><option value="" selected disabled>Select priority</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <div><label for="category">Category</label><select id="category" name="category" required><option value="" selected disabled>Select category</option><option>Work</option><option>Personal</option><option>Health</option></select></div>
+        <div><label for="due_date">Due date</label><input id="due_date" name="due_date" type="date" required></div>
+        <button class="add-button" type="submit">Add task</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="tasks-heading">
+      <div class="section-heading"><h2 id="tasks-heading">All tasks</h2><span class="section-label">{{ tasks|length }} {{ 'task' if tasks|length == 1 else 'tasks' }}</span></div>
+      {% if tasks %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Task</th><th scope="col">Priority</th><th scope="col">Category</th><th scope="col">Due date</th><th scope="col"><span class="section-label">Action</span></th></tr></thead>
+          <tbody>
+            {% for task_index, item in tasks %}
+            <tr>
+              <td>{{ item.task }}</td><td><span class="priority priority-{{ item.priority|lower }}">{{ item.priority }}</span></td><td>{{ item.category }}</td><td>{{ item.due_date }}</td>
+              <td><form action="{{ url_for('delete_task', task_index=task_index) }}" method="post"><button class="delete-button" type="submit" aria-label="Delete {{ item.task }}">Delete</button></form></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No tasks yet.</div>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

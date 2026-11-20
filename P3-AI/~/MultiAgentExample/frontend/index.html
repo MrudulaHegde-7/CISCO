@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f2">
+  <title>People Desk | Multi-Agent</title>
+  <link rel="stylesheet" href="/frontend/styles.css">
+  <script src="/frontend/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="People Desk home"><span class="brand-mark" aria-hidden="true">P</span><span><strong>people</strong><small>DESK / MULTI</small></span></a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="primary-nav">
+        <a class="nav-link active" href="#directory" aria-current="page"><span class="nav-icon" aria-hidden="true">▤</span>Directory<span class="nav-count" id="nav-count">0</span></a>
+        <a class="nav-link" href="#overview"><span class="nav-icon" aria-hidden="true">◫</span>Overview</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span class="status-dot"></span><span>Local database<br><strong>Connected</strong></span></div>
+        <div class="user-chip"><span class="avatar avatar-owner">PD</span><span><strong>People team</strong><small>Administrator</small></span></div>
+      </div>
+    </aside>
+    <main class="main-content" id="directory">
+      <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong>People</strong></div><div class="top-actions"><span class="today-label" id="today-label"></span><button class="icon-button" id="refresh-button" type="button" title="Refresh directory" aria-label="Refresh directory">↻</button></div></header>
+      <section class="page-heading" id="overview">
+        <div><p class="eyebrow">PEOPLE OPERATIONS</p><h1>Your people, <em>in focus.</em></h1><p class="page-subtitle">One agent for answers. Another to keep your directory up to date.</p></div>
+        <div class="heading-actions"><button class="button button-secondary" id="export-button" type="button"><span aria-hidden="true">↓</span> Export CSV</button><button class="button button-primary" id="add-button" type="button"><span aria-hidden="true">＋</span> Add employee</button></div>
+      </section>
+      <section class="metric-grid" aria-label="Employee overview">
+        <article class="metric"><div class="metric-top"><span>Total people</span><span class="metric-symbol">◉</span></div><strong id="metric-headcount">—</strong><small>Across your organization</small></article>
+        <article class="metric"><div class="metric-top"><span>Active today</span><span class="metric-symbol">↗</span></div><strong id="metric-active">—</strong><small>Ready to make things happen</small></article>
+        <article class="metric"><div class="metric-top"><span>Departments</span><span class="metric-symbol">▦</span></div><strong id="metric-departments">—</strong><small>Distinct teams represented</small></article>
+        <article class="metric"><div class="metric-top"><span>Annual payroll</span><span class="metric-symbol">$</span></div><strong id="metric-payroll">—</strong><small>Active and on leave</small></article>
+      </section>
+      <div class="workspace-grid">
+        <section class="directory-panel" aria-labelledby="directory-title">
+          <div class="section-heading"><div><p class="eyebrow">YOUR ORGANIZATION</p><h2 id="directory-title">Employee directory</h2></div><span class="result-count" id="result-count">0 people</span></div>
+          <div class="toolbar">
+            <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Search people, roles, teams..." autocomplete="off" aria-label="Search employees"><kbd>/</kbd></label>
+            <label class="select-wrap"><span class="sr-only">Filter by department</span><select id="department-filter"><option value="">All departments</option></select><span aria-hidden="true">⌄</span></label>
+            <label class="select-wrap"><span class="sr-only">Filter by status</span><select id="status-filter"><option value="">Any status</option><option>Active</option><option>On leave</option><option>Inactive</option></select><span aria-hidden="true">⌄</span></label>
+          </div>
+          <div class="table-scroll">
+            <table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>ROLE</th><th>START DATE</th><th>STATUS</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="employee-rows"></tbody></table>
+            <div class="loading-state" id="loading-state"><span class="loading-mark"></span>Loading your directory</div>
+            <div class="empty-state" id="empty-state" hidden><span class="empty-icon">＋</span><h3>No people here yet</h3><p>Add your first employee to start building the directory.</p><button class="button button-primary" id="empty-add-button" type="button">Add first employee</button></div>
+            <div class="empty-state" id="no-results-state" hidden><span class="empty-icon">⌕</span><h3>No matches found</h3><p>Try changing your search or filters.</p><button class="text-button" id="clear-filters-button" type="button">Clear filters</button></div>
+          </div>
+          <footer class="table-footer"><span id="table-footer-label">Showing 0 employees</span><span class="footer-privacy">▣ Employee data stays on this device</span></footer>
+        </section>
+        <aside class="assistant-panel" aria-labelledby="assistant-title">
+          <header class="assistant-header"><div class="assistant-orbit">✳</div><div><p class="eyebrow">MULTI-AGENT ASSISTANT</p><h2 id="assistant-title">People assistant</h2></div><span class="online-indicator" title="Agents ready"></span></header>
+          <div class="agent-legend"><span><i class="read-dot"></i>Read agent</span><span><i class="write-dot"></i>Write agent</span></div>
+          <div class="assistant-context"><span class="context-mark">✦</span><p>Read requests go to a read-only agent. Add, edit, and delete requests go to the write agent.</p></div>
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Assistant conversation"></div>
+          <div class="suggestions" id="suggestions"><span>Try asking</span><button type="button" data-prompt="How many employees are in each department?">Team breakdown</button><button type="button" data-prompt="Who is on leave right now?">Who's on leave</button><button type="button" data-prompt="Find employee 1">Find by ID</button></div>
+          <form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">Ask the People assistant</label><textarea id="chat-input" rows="1" maxlength="2000" placeholder="Ask about your team..." required></textarea><button type="submit" id="chat-send" aria-label="Send message" title="Send message">↑</button></form>
+          <p class="assistant-footnote">Deletes require an explicit confirmation.</p>
+        </aside>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+  <dialog class="employee-dialog" id="employee-dialog" aria-labelledby="dialog-title">
+    <form id="employee-form" class="employee-form">
+      <header class="dialog-header"><div><p class="eyebrow">PEOPLE DIRECTORY</p><h2 id="dialog-title">Add employee</h2></div><button class="icon-button dialog-close" type="button" aria-label="Close dialog">×</button></header>
+      <div class="form-grid">
+        <label class="form-field field-wide">Full name<input name="name" required minlength="2" maxlength="80" placeholder="e.g. Maya Chen"></label>
+        <label class="form-field field-wide">Work email<input name="email" type="email" required maxlength="120" placeholder="maya@company.com"></label>
+        <label class="form-field">Phone<input name="phone" type="tel" required minlength="7" maxlength="24" placeholder="+1 555 010 2040"></label>
+        <label class="form-field">Department<input name="department" required minlength="2" maxlength="60" placeholder="Design"></label>
+        <label class="form-field field-wide">Job title<input name="title" required minlength="2" maxlength="80" placeholder="Product designer"></label>
+        <label class="form-field">Start date<input name="start_date" type="date" required></label>
+        <label class="form-field">Annual salary<input name="salary" type="number" min="0" max="100000000" step="100" required placeholder="85000"></label>
+        <label class="form-field field-wide">Status<select name="status"><option>Active</option><option>On leave</option><option>Inactive</option></select></label>
+      </div>
+      <footer class="dialog-actions"><button class="button button-secondary dialog-cancel" type="button">Cancel</button><button class="button button-primary" type="submit" id="save-button">Save employee</button></footer>
+    </form>
+  </dialog>
+</body>
+</html>

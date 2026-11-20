@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173c32">
+  <title>College Registry</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div id="app-shell" hidden>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="College Registry home">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span>College Registry</span>
+    </a>
+    <div class="account-actions">
+      <div class="top-meta"><span class="status-dot" aria-hidden="true"></span>Academic records</div>
+      <span class="account-name" id="account-name"></span>
+      <button class="button sign-out" id="logout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Administration / Records</p>
+        <h1>Campus directory</h1>
+        <p class="subtitle">Students and academic departments</p>
+      </div>
+      <time class="today" id="today"></time>
+    </section>
+
+    <section class="metrics" aria-label="College overview">
+      <div class="metric"><span class="metric-label">Students</span><strong class="metric-value" id="student-total">—</strong><span class="metric-note">Registered records</span></div>
+      <div class="metric"><span class="metric-label">Departments</span><strong class="metric-value" id="department-total">—</strong><span class="metric-note">Academic units</span></div>
+      <div class="metric"><span class="metric-label">Largest department</span><strong class="metric-value metric-feature" id="largest-department">—</strong><span class="metric-note" id="largest-count">Student enrollment</span></div>
+    </section>
+
+    <section class="workspace" aria-label="College records">
+      <nav class="tabs" role="tablist" aria-label="Record type">
+        <button class="tab" id="students-tab" type="button" role="tab" aria-selected="true" aria-controls="students-view">Students <span class="tab-count" id="student-tab-count">0</span></button>
+        <button class="tab" id="departments-tab" type="button" role="tab" aria-selected="false" aria-controls="departments-view">Departments <span class="tab-count" id="department-tab-count">0</span></button>
+      </nav>
+
+      <section class="view" id="students-view" role="tabpanel" aria-labelledby="students-tab">
+        <div class="toolbar">
+          <div class="filters">
+            <label class="sr-only" for="student-search">Search students</label>
+            <input class="control search" id="student-search" type="search" placeholder="Search name, email, or phone">
+            <label class="sr-only" for="department-filter">Filter by department</label>
+            <select class="control department-filter" id="department-filter"><option value="">All departments</option></select>
+          </div>
+          <button class="button primary" id="add-student" type="button"><span aria-hidden="true">＋</span> Add student</button>
+        </div>
+        <p class="notice" id="student-error" role="alert" hidden></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Contact</th><th>Department</th><th>Enrolled</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody id="student-rows"><tr><td class="loading" colspan="5">Loading students…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="departments-view" role="tabpanel" aria-labelledby="departments-tab" hidden>
+        <div class="toolbar">
+          <div class="filters">
+            <label class="sr-only" for="department-search">Search departments</label>
+            <input class="control search" id="department-search" type="search" placeholder="Search departments or codes">
+          </div>
+          <button class="button primary" id="add-department" type="button"><span aria-hidden="true">＋</span> Add department</button>
+        </div>
+        <p class="notice" id="department-error" role="alert" hidden></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Department</th><th>Building</th><th>Department head</th><th>Students</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody id="department-rows"><tr><td class="loading" colspan="5">Loading departments…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+  <aside class="chat-panel" id="chat-panel" aria-labelledby="chat-title" hidden>
+    <header class="chat-header">
+      <div><h2 id="chat-title">College assistant</h2><p>Student, department, and uploaded files</p></div>
+      <button class="chat-close" id="chat-close" type="button" aria-label="Close assistant">×</button>
+    </header>
+    <div class="chat-messages" id="chat-messages" role="log" aria-label="Assistant conversation" aria-live="polite">
+      <p class="chat-message assistant-message">Hello. Ask about college records or information in your uploaded files.</p>
+    </div>
+    <section class="chat-library" aria-label="Uploaded knowledge files">
+      <div class="chat-library-heading">
+        <h3>Knowledge files</h3>
+        <input id="chat-file" class="chat-file-input" type="file" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown">
+        <label class="chat-upload" for="chat-file"><span aria-hidden="true">＋</span> Upload file</label>
+      </div>
+      <p class="chat-file-status" id="chat-file-status" role="status" aria-live="polite"></p>
+      <ul class="chat-documents" id="chat-documents"></ul>
+    </section>
+    <form class="chat-form" id="chat-form">
+      <label class="sr-only" for="chat-question">Ask the college assistant</label>
+      <input id="chat-question" name="question" maxlength="1500" placeholder="Ask about your college…" autocomplete="off" required>
+      <button class="chat-send" id="chat-send" type="submit" aria-label="Send message" title="Send message">Send</button>
+    </form>
+  </aside>
+  <button class="chat-launcher" id="chat-launcher" type="button" aria-controls="chat-panel" aria-expanded="false">
+    <span class="chat-launcher-icon" aria-hidden="true">···</span><span>Ask the college assistant</span>
+  </button>
+  </div>
+
+  <main class="auth-screen" id="auth-screen">
+    <section class="auth-story">
+      <div class="story-mark" aria-hidden="true">C</div>
+      <p class="story-kicker">College Registry</p>
+      <h1>One place for your campus records.</h1>
+      <p class="story-copy">Keep student and department information organized, current, and easy to find.</p>
+      <div class="story-rule" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </section>
+    <section class="auth-panel" aria-labelledby="auth-title">
+      <div class="auth-content">
+        <p class="eyebrow">Campus administration</p>
+        <h2 id="auth-title">Welcome back</h2>
+        <p class="auth-subtitle" id="auth-subtitle">Sign in to continue to your directory.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Account access">
+          <button class="auth-tab" id="login-tab" type="button" role="tab" aria-selected="true">Sign in</button>
+          <button class="auth-tab" id="signup-tab" type="button" role="tab" aria-selected="false">Create account</button>
+        </div>
+        <p class="auth-error" id="auth-error" role="alert" hidden></p>
+        <form class="auth-form" id="login-form">
+          <div class="form-field"><label for="login-email">Email</label><input id="login-email" name="email" type="email" required maxlength="160" autocomplete="email"></div>
+          <div class="form-field"><label for="login-password">Password</label><input id="login-password" name="password" type="password" required minlength="8" maxlength="128" autocomplete="current-password"></div>
+          <button class="button primary auth-submit" type="submit">Sign in</button>
+        </form>
+        <form class="auth-form" id="signup-form" hidden>
+          <div class="form-field"><label for="signup-name">Full name</label><input id="signup-name" name="full_name" required minlength="2" maxlength="120" autocomplete="name"></div>
+          <div class="form-field"><label for="signup-email">Email</label><input id="signup-email" name="email" type="email" required maxlength="160" autocomplete="email"></div>
+          <div class="form-field"><label for="signup-password">Password</label><input id="signup-password" name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" aria-describedby="password-note"><span class="field-note" id="password-note">Use at least 8 characters.</span></div>
+          <button class="button primary auth-submit" type="submit">Create account</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="student-modal" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="student-dialog-title">
+      <div class="dialog-heading"><div><p class="eyebrow">Student record</p><h2 id="student-dialog-title">Add student</h2></div><button class="close-button" type="button" data-close aria-label="Close dialog">×</button></div>
+      <form id="student-form">
+        <input type="hidden" name="id">
+        <div class="form-grid">
+          <div class="form-field full"><label for="student-name">Full name</label><input id="student-name" name="full_name" required minlength="2" maxlength="120" autocomplete="name"></div>
+          <div class="form-field"><label for="student-email">Email</label><input id="student-email" name="email" type="email" required maxlength="160" autocomplete="email"></div>
+          <div class="form-field"><label for="student-phone">Phone</label><input id="student-phone" name="phone" type="tel" maxlength="30" title="Enter exactly 10 digits; spaces, +, parentheses, periods and hyphens are allowed." autocomplete="tel"></div>
+          <div class="form-field"><label for="student-department">Department</label><select id="student-department" name="department_id" aria-describedby="department-empty-help" required><option value="" selected disabled>Loading departments…</option></select><p class="select-help" id="department-empty-help" hidden>No departments have been added. <button class="text-button" id="create-department-from-student" type="button">Add a department</button></p></div>
+          <div class="form-field"><label for="student-year">Enrollment year</label><input id="student-year" name="enrollment_year" type="number" min="1900" max="2100" required></div>
+        </div>
+        <div class="form-actions"><button class="button secondary" type="button" data-close>Cancel</button><button class="button primary" type="submit">Save student</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="overlay" id="department-modal" hidden>
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="department-dialog-title">
+      <div class="dialog-heading"><div><p class="eyebrow">Academic unit</p><h2 id="department-dialog-title">Add department</h2></div><button class="close-button" type="button" data-close aria-label="Close dialog">×</button></div>
+      <form id="department-form">
+        <input type="hidden" name="id">
+        <div class="form-grid">
+          <div class="form-field"><label for="department-code">Department code</label><input id="department-code" name="code" required minlength="2" maxlength="12" pattern="[A-Za-z0-9\-]+" placeholder="e.g. CSE"></div>
+          <div class="form-field"><label for="department-name">Department name</label><input id="department-name" name="name" required minlength="2" maxlength="100"></div>
+          <div class="form-field"><label for="department-building">Building</label><input id="department-building" name="building" maxlength="120"></div>
+          <div class="form-field"><label for="department-head">Department head</label><input id="department-head" name="head" maxlength="100"></div>
+        </div>
+        <div class="form-actions"><button class="button secondary" type="button" data-close>Cancel</button><button class="button primary" type="submit">Save department</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
